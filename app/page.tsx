@@ -124,9 +124,7 @@ export default function Home() {
     if (partes.length === 1) return partes.at(0);
     return `${partes.at(0)} ${partes.at(1)?.at(0)}.`;
   };
-
-
-  const formatearFecha = (iso: string) => {
+    const formatearFecha = (iso: string) => {
     if (!iso) return "A confirmar";
     const d = new Date(iso);
     if (isNaN(d.getTime())) return iso;
@@ -184,7 +182,6 @@ export default function Home() {
   const digitos = rifa.cantidad_numeros > 100 ? 3 : 2;
   const lista = Array.from({ length: rifa.cantidad_numeros }, (_, i) => i.toString().padStart(digitos, '0'));
   const ganadoresLista = rifa.ganadores ?? [];
-
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 pb-12 font-sans">
       <nav className="bg-slate-900 text-white p-3 sticky top-0 z-40 shadow">
@@ -256,7 +253,6 @@ export default function Home() {
           </section>
         </main>
       )}
-
       {vista === 'admin' && (
         <PanelAdmin
           rifa={rifa}
@@ -310,3 +306,57 @@ export default function Home() {
                 <div className="flex justify-between items-center">
                   <h3 className="font-bold text-slate-900">🏆 Ganadores Oficiales</h3>
                   <a
+                    href={`https://wa.me{rifa.whatsapp_organizador}?text=${encodeURIComponent(`📋 *ACTA DE SORTEO - ${rifa.titulo}*\n\n` + ganadoresLista.map(g => `• ${g.puesto}: #${g.numero} - ${g.comprador} (Tel: ${g.telefono})`).join('\n'))}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="bg-slate-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg"
+                  >
+                    📤 Enviar Acta al Organizador
+                  </a>
+                </div>
+                {ganadoresLista.map((g, idx) => (
+                  <div key={idx} className="p-4 bg-amber-50 border-2 border-amber-400 rounded-xl flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <span className="text-xs font-bold uppercase text-amber-800">{g.puesto} • {g.premio}</span>
+                      <p className="text-lg font-black text-slate-900">#{g.numero} — {g.comprador}</p>
+                    </div>
+                    <a
+                      href={`https://wa.me{g.telefono.replace(/\D/g, '')}?text=${encodeURIComponent(`🎉 ¡Felicitaciones *${g.comprador}*! Ganaste el *${g.puesto}* (${g.premio}) con el número *#${g.numero}* en "${rifa.titulo}".`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="bg-green-600 text-white text-xs font-bold px-3.5 py-2 rounded-lg shadow"
+                    >
+                      📲 Avisar al Ganador
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        </main>
+      )}
+
+      {seleccionado && (
+        <aside className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <form onSubmit={reservar} className="bg-white rounded-2xl max-w-sm w-full p-6 space-y-3">
+            <h3 className="text-lg font-bold">Reservar número #{seleccionado}</h3>
+            <input type="text" required placeholder="Tu Nombre y Apellido" value={comprador} onChange={e => setComprador(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
+            <input type="tel" required placeholder="Tu WhatsApp (Ej: 3434123456)" value={telefono} onChange={e => setTelefono(e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm" />
+            <p className="bg-slate-100 p-3 rounded-lg text-xs flex justify-between items-center">
+              <span>Alias: <strong>{rifa.alias_pago}</strong></span>
+              <button type="button" onClick={() => { navigator.clipboard.writeText(rifa.alias_pago); setCopiado(true); }} className="bg-blue-100 text-blue-700 px-2 py-1 rounded font-bold">
+                {copiado ? "Copiado" : "Copiar"}
+              </button>
+            </p>
+            <button type="submit" className="w-full bg-green-600 text-white font-bold py-2.5 rounded-xl text-sm">Confirmar y avisar al Organizador</button>
+            <button type="button" onClick={() => setSeleccionado(null)} className="w-full text-xs text-slate-500">Cancelar</button>
+          </form>
+        </aside>
+      )}
+
+      <PieLegal />
+    </div>
+  );
+}
+
+  
